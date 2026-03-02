@@ -330,24 +330,6 @@
   .inv-totals-row.grand { border-top: 2px solid var(--ink); margin-top: 6px; padding-top: 8px; font-size: 20px; font-weight: 700; }
   .inv-totals-row.grand .val { color: var(--accent); }
   .inv-notes { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
-  .inv-stamp {
-    margin-top: 40px;
-    text-align: right;
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .inv-stamp-box {
-    display: inline-block;
-    width: 100px;
-    height: 100px;
-    border: 2px dashed var(--border);
-    border-radius: 50%;
-    line-height: 100px;
-    text-align: center;
-    font-size: 11px;
-    color: var(--border);
-  }
-
   /* ── Responsive ── */
   @media (max-width: 640px) {
     .form-grid, .form-grid.three { grid-template-columns: 1fr; }
@@ -664,10 +646,6 @@
       </div>
 
       ${notes ? `<div class="inv-notes"><strong>備考</strong><br><pre style="font-family:inherit; white-space:pre-wrap; margin-top:4px;">${notes}</pre></div>` : ''}
-
-      <div class="inv-stamp">
-        <div class="inv-stamp-box">印</div>
-      </div>
     `;
 
     document.getElementById('previewBody').innerHTML = html;
@@ -706,8 +684,6 @@
         .inv-totals-row.grand { border-top:2px solid var(--ink); margin-top:6px; padding-top:8px; font-size:20px; font-weight:700; }
         .inv-totals-row.grand .val { color:var(--accent); }
         .inv-notes { margin-top:32px; padding-top:16px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
-        .inv-stamp { margin-top:40px; text-align:right; font-size:13px; color:var(--muted); }
-        .inv-stamp-box { display:inline-block; width:100px; height:100px; border:2px dashed var(--border); border-radius:50%; line-height:100px; text-align:center; font-size:11px; color:var(--border); }
         @page { margin:15mm; }
       </style></head><body>${content}</body></html>`);
     win.document.close();
