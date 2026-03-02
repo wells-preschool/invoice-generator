@@ -335,7 +335,38 @@
     .form-grid, .form-grid.three { grid-template-columns: 1fr; }
     .inv-parties { grid-template-columns: 1fr; gap: 20px; }
     .modal-content { padding: 24px 16px; }
-    .items-table { font-size: 12px; }
+
+    /* ── Mobile card layout for items table ── */
+    .items-table { font-size: 14px; }
+    .items-table thead { display: none; }
+    .items-table, .items-table tbody { display: block; }
+    .items-table tbody tr {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 4px 8px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+    .items-table td { padding: 2px 0; }
+    .items-table td::before {
+      content: attr(data-label);
+      display: block;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 2px;
+      letter-spacing: 0.03em;
+    }
+    .items-table td:nth-child(1) { grid-column: 1 / -1; padding-right: 36px; }
+    .items-table td:nth-child(5) { grid-column: 1 / -1; text-align: left; }
+    .items-table td:nth-child(6) {
+      position: absolute;
+      top: 10px;
+      right: -4px;
+    }
+    .items-table td:nth-child(6)::before { display: none; }
+    .items-table td input { font-size: 16px; }
   }
 </style>
 </head>
@@ -598,11 +629,11 @@
     const tr = document.createElement('tr');
     tr.id = 'item-' + itemId;
     tr.innerHTML = `
-      <td><input type="text" oninput="recalc()"></td>
-      <td><input type="number" class="num-input" value="1" min="0" oninput="recalc()"></td>
-      <td><input type="text" value="式" style="text-align:center"></td>
-      <td><input type="text" class="num-input" value="0" oninput="recalc()"></td>
-      <td class="subtotal">¥0</td>
+      <td data-label="品目・内容"><input type="text" oninput="recalc()"></td>
+      <td data-label="数量"><input type="number" class="num-input" value="1" min="0" oninput="recalc()"></td>
+      <td data-label="単位"><input type="text" value="式" style="text-align:center"></td>
+      <td data-label="単価（税抜）"><input type="text" class="num-input" value="0" oninput="recalc()"></td>
+      <td class="subtotal" data-label="金額">¥0</td>
       <td><button class="btn-remove" onclick="removeItem(${itemId})">×</button></td>
     `;
     document.getElementById('itemsBody').appendChild(tr);
