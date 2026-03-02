@@ -673,7 +673,7 @@
     const taxRate = parseFloat(document.getElementById('taxRate').value);
     const total = Math.round(subtotal + subtotal * taxRate);
     const yymmdd = issueDate ? issueDate.slice(2).replace(/-/g, '') : '000000';
-    const pdfTitle = `${yymmdd}_${invoiceNo}_${fromName}_${total}`;
+    const pdfTitle = `${yymmdd}_${invoiceNo}_${fromName}_${total}円`;
 
     const win = window.open('', '_blank');
     win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
