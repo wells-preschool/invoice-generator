@@ -617,8 +617,8 @@
     if (fromRegNo) fromDetails += '登録番号: ' + fromRegNo;
 
     let toDetails = '';
-    if (toPerson) toDetails += toPerson + ' 様<br>';
-    if (toAddress) toDetails += toAddress;
+    if (toAddress) toDetails += toAddress + '<br>';
+    if (toPerson) toDetails += toPerson + ' 様';
 
     const html = `
       <div class="inv-header">
