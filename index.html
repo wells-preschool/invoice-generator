@@ -480,10 +480,10 @@
   let itemId = 0;
 
   function generateInvoiceId() {
-    const bytes = new Uint8Array(3);
+    const chars = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const bytes = new Uint8Array(6);
     crypto.getRandomValues(bytes);
-    const num = ((bytes[0] << 16) | (bytes[1] << 8) | bytes[2]) % 1000000;
-    return 'INV-' + String(num).padStart(6, '0');
+    return 'INV-' + Array.from(bytes).map(b => chars[b % chars.length]).join('');
   }
 
   // Set invoice number
