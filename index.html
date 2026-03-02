@@ -393,10 +393,6 @@
         <label>会社名 / 氏名</label>
         <input type="text" id="fromName">
       </div>
-      <div class="form-group">
-        <label>担当者</label>
-        <input type="text" id="fromPerson">
-      </div>
       <div class="form-group full">
         <label>住所</label>
         <input type="text" id="fromAddress">
@@ -577,7 +573,6 @@
 
   function showPreview() {
     const fromName = document.getElementById('fromName').value || '（未入力）';
-    const fromPerson = document.getElementById('fromPerson').value;
     const fromAddress = document.getElementById('fromAddress').value;
     const fromTel = document.getElementById('fromTel').value;
     const fromEmail = document.getElementById('fromEmail').value;
