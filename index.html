@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>請求書ジェネレーター</title>
+<title>請求書つくるくん</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -108,6 +108,7 @@
     border-color: var(--accent);
   }
   .form-group textarea { resize: vertical; min-height: 60px; }
+  .form-group textarea::placeholder { color: #ccc; }
 
   /* ── Items Table ── */
   .items-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
@@ -359,8 +360,8 @@
 <body>
 
 <div class="app-header">
-  <h1>請求書ジェネレーター</h1>
-  <p>Invoice Generator — ブラウザで完結・PDF出力対応</p>
+  <h1>請求書つくるくん</h1>
+  <p>ブラウザで完結・PDF出力対応の請求書ジェネレーター</p>
 </div>
 
 <div class="container">
@@ -371,7 +372,7 @@
     <div class="form-grid three">
       <div class="form-group">
         <label>請求書番号</label>
-        <input type="text" id="invoiceNo" value="INV-0001">
+        <input type="text" id="invoiceNo">
       </div>
       <div class="form-group">
         <label>発行日</label>
@@ -386,31 +387,31 @@
 
   <!-- 請求元 -->
   <div class="section">
-    <div class="section-title">請求元（自社）</div>
+    <div class="section-title">請求元</div>
     <div class="form-grid">
       <div class="form-group">
         <label>会社名 / 氏名</label>
-        <input type="text" id="fromName" placeholder="株式会社サンプル">
+        <input type="text" id="fromName">
       </div>
       <div class="form-group">
         <label>担当者</label>
-        <input type="text" id="fromPerson" placeholder="山田 太郎">
+        <input type="text" id="fromPerson">
       </div>
       <div class="form-group full">
         <label>住所</label>
-        <input type="text" id="fromAddress" placeholder="東京都渋谷区...">
+        <input type="text" id="fromAddress">
       </div>
       <div class="form-group">
         <label>電話番号</label>
-        <input type="text" id="fromTel" placeholder="03-1234-5678">
+        <input type="text" id="fromTel">
       </div>
       <div class="form-group">
         <label>メール</label>
-        <input type="email" id="fromEmail" placeholder="info@example.com">
+        <input type="email" id="fromEmail">
       </div>
       <div class="form-group">
         <label>登録番号（インボイス）</label>
-        <input type="text" id="fromRegNo" placeholder="T1234567890123">
+        <input type="text" id="fromRegNo">
       </div>
     </div>
   </div>
@@ -421,15 +422,15 @@
     <div class="form-grid">
       <div class="form-group">
         <label>会社名 / 氏名</label>
-        <input type="text" id="toName" placeholder="株式会社クライアント">
+        <input type="text" id="toName" value="ウェルズ株式会社">
       </div>
       <div class="form-group">
         <label>担当者</label>
-        <input type="text" id="toPerson" placeholder="佐藤 花子">
+        <input type="text" id="toPerson" value="代表取締役 鶴岡 貴子">
       </div>
       <div class="form-group full">
         <label>住所</label>
-        <input type="text" id="toAddress" placeholder="大阪府大阪市...">
+        <input type="text" id="toAddress" value="〒248-0014 神奈川県鎌倉市由比ガ浜4-3-10-1">
       </div>
     </div>
   </div>
@@ -500,6 +501,15 @@
 <script>
   let itemId = 0;
 
+  function generateInvoiceId() {
+    const bytes = new Uint8Array(6);
+    crypto.getRandomValues(bytes);
+    return 'INV-' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+  }
+
+  // Set invoice number
+  document.getElementById('invoiceNo').value = generateInvoiceId();
+
   // Set today's date
   const today = new Date();
   document.getElementById('issueDate').value = formatDate(today);
@@ -526,10 +536,10 @@
     const tr = document.createElement('tr');
     tr.id = 'item-' + itemId;
     tr.innerHTML = `
-      <td><input type="text" placeholder="例: Webサイト制作" oninput="recalc()"></td>
+      <td><input type="text" oninput="recalc()"></td>
       <td><input type="number" class="num-input" value="1" min="0" oninput="recalc()"></td>
       <td><input type="text" value="式" style="text-align:center"></td>
-      <td><input type="number" class="num-input" value="0" min="0" oninput="recalc()"></td>
+      <td><input type="text" class="num-input" value="0" oninput="recalc()"></td>
       <td class="subtotal">¥0</td>
       <td><button class="btn-remove" onclick="removeItem(${itemId})">×</button></td>
     `;
@@ -711,7 +721,7 @@
   function resetForm() {
     if (!confirm('入力内容をすべてリセットしますか？')) return;
     document.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(el => el.value = '');
-    document.getElementById('invoiceNo').value = 'INV-0001';
+    document.getElementById('invoiceNo').value = generateInvoiceId();
     document.getElementById('issueDate').value = formatDate(new Date());
     const d = new Date(); d.setDate(d.getDate()+30);
     document.getElementById('dueDate').value = formatDate(d);
