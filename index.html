@@ -308,7 +308,7 @@
 
   /* ── Invoice Preview Styles ── */
   .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
-  .inv-title { font-size: 32px; font-weight: 700; letter-spacing: 0.12em; color: var(--accent); }
+  .inv-title { font-size: 32px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink); }
   .inv-meta { text-align: right; font-size: 13px; color: var(--muted); line-height: 1.8; }
   .inv-parties { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 32px; }
   .inv-party-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 4px; }
@@ -328,26 +328,8 @@
   .inv-totals-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
   .inv-totals-row .val { font-family: 'JetBrains Mono', monospace; }
   .inv-totals-row.grand { border-top: 2px solid var(--ink); margin-top: 6px; padding-top: 8px; font-size: 20px; font-weight: 700; }
-  .inv-totals-row.grand .val { color: var(--accent); }
+  .inv-totals-row.grand .val { color: var(--ink); }
   .inv-notes { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
-  .inv-stamp {
-    margin-top: 40px;
-    text-align: right;
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .inv-stamp-box {
-    display: inline-block;
-    width: 100px;
-    height: 100px;
-    border: 2px dashed var(--border);
-    border-radius: 50%;
-    line-height: 100px;
-    text-align: center;
-    font-size: 11px;
-    color: var(--border);
-  }
-
   /* ── Responsive ── */
   @media (max-width: 640px) {
     .form-grid, .form-grid.three { grid-template-columns: 1fr; }
@@ -392,10 +374,6 @@
       <div class="form-group">
         <label>会社名 / 氏名</label>
         <input type="text" id="fromName">
-      </div>
-      <div class="form-group">
-        <label>担当者</label>
-        <input type="text" id="fromPerson">
       </div>
       <div class="form-group full">
         <label>住所</label>
@@ -502,9 +480,10 @@
   let itemId = 0;
 
   function generateInvoiceId() {
+    const chars = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
     const bytes = new Uint8Array(6);
     crypto.getRandomValues(bytes);
-    return 'INV-' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase();
+    return 'INV-' + Array.from(bytes).map(b => chars[b % chars.length]).join('');
   }
 
   // Set invoice number
@@ -576,7 +555,6 @@
 
   function showPreview() {
     const fromName = document.getElementById('fromName').value || '（未入力）';
-    const fromPerson = document.getElementById('fromPerson').value;
     const fromAddress = document.getElementById('fromAddress').value;
     const fromTel = document.getElementById('fromTel').value;
     const fromEmail = document.getElementById('fromEmail').value;
@@ -621,8 +599,8 @@
     if (fromRegNo) fromDetails += '登録番号: ' + fromRegNo;
 
     let toDetails = '';
-    if (toPerson) toDetails += toPerson + ' 様<br>';
-    if (toAddress) toDetails += toAddress;
+    if (toAddress) toDetails += toAddress + '<br>';
+    if (toPerson) toDetails += toPerson + ' 様';
 
     const html = `
       <div class="inv-header">
@@ -650,7 +628,7 @@
       </div>
 
       <div style="font-size:16px; margin-bottom:24px; font-weight:600;">
-        ご請求金額: <span style="font-size:24px; color:var(--accent); font-family:'JetBrains Mono',monospace;">${formatYen(total)}</span>
+        ご請求金額: <span style="font-size:24px; color:var(--ink); font-family:'JetBrains Mono',monospace;">${formatYen(total)}</span>
         <span style="font-size:13px; font-weight:400; color:var(--muted);">（税込）</span>
       </div>
 
@@ -668,10 +646,6 @@
       </div>
 
       ${notes ? `<div class="inv-notes"><strong>備考</strong><br><pre style="font-family:inherit; white-space:pre-wrap; margin-top:4px;">${notes}</pre></div>` : ''}
-
-      <div class="inv-stamp">
-        <div class="inv-stamp-box">印</div>
-      </div>
     `;
 
     document.getElementById('previewBody').innerHTML = html;
@@ -688,11 +662,11 @@
     win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
       <style>
-        :root { --ink:#1a1a2e; --accent:#c0392b; --border:#e0ddd8; --muted:#8a8780; }
+        :root { --ink:#1a1a2e; --accent:#1a1a2e; --border:#e0ddd8; --muted:#8a8780; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Noto Sans JP',sans-serif; padding:40px; color:var(--ink); line-height:1.6; }
         .inv-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:32px; }
-        .inv-title { font-size:32px; font-weight:700; letter-spacing:0.12em; color:var(--accent); }
+        .inv-title { font-size:32px; font-weight:700; letter-spacing:0.12em; color:var(--ink); }
         .inv-meta { text-align:right; font-size:13px; color:var(--muted); line-height:1.8; }
         .inv-parties { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-bottom:32px; }
         .inv-party-label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); margin-bottom:4px; }
@@ -708,10 +682,8 @@
         .inv-totals-row { display:flex; justify-content:space-between; padding:4px 0; font-size:14px; }
         .inv-totals-row .val { font-family:'JetBrains Mono',monospace; }
         .inv-totals-row.grand { border-top:2px solid var(--ink); margin-top:6px; padding-top:8px; font-size:20px; font-weight:700; }
-        .inv-totals-row.grand .val { color:var(--accent); }
+        .inv-totals-row.grand .val { color:var(--ink); }
         .inv-notes { margin-top:32px; padding-top:16px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
-        .inv-stamp { margin-top:40px; text-align:right; font-size:13px; color:var(--muted); }
-        .inv-stamp-box { display:inline-block; width:100px; height:100px; border:2px dashed var(--border); border-radius:50%; line-height:100px; text-align:center; font-size:11px; color:var(--border); }
         @page { margin:15mm; }
       </style></head><body>${content}</body></html>`);
     win.document.close();
