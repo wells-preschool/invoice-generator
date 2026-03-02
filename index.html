@@ -535,10 +535,10 @@
     const tr = document.createElement('tr');
     tr.id = 'item-' + itemId;
     tr.innerHTML = `
-      <td><input type="text" placeholder="例: Webサイト制作" oninput="recalc()"></td>
+      <td><input type="text" oninput="recalc()"></td>
       <td><input type="number" class="num-input" value="1" min="0" oninput="recalc()"></td>
       <td><input type="text" value="式" style="text-align:center"></td>
-      <td><input type="number" class="num-input" value="0" min="0" oninput="recalc()"></td>
+      <td><input type="text" class="num-input" value="0" oninput="recalc()"></td>
       <td class="subtotal">¥0</td>
       <td><button class="btn-remove" onclick="removeItem(${itemId})">×</button></td>
     `;
