@@ -479,6 +479,89 @@
 <script>
   let itemId = 0;
 
+  // ── Auto-save ──
+  const SAVE_KEY = 'invoiceAutoSave';
+
+  function debounce(fn, ms) {
+    let timer;
+    return function() { clearTimeout(timer); timer = setTimeout(fn, ms); };
+  }
+
+  function saveData() {
+    const items = [];
+    document.querySelectorAll('#itemsBody tr').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      items.push({
+        description: inputs[0].value,
+        quantity: inputs[1].value,
+        unit: inputs[2].value,
+        unitPrice: inputs[3].value
+      });
+    });
+    const data = {
+      from: {
+        name: document.getElementById('fromName').value,
+        address: document.getElementById('fromAddress').value,
+        tel: document.getElementById('fromTel').value,
+        email: document.getElementById('fromEmail').value,
+        regNo: document.getElementById('fromRegNo').value
+      },
+      to: {
+        name: document.getElementById('toName').value,
+        person: document.getElementById('toPerson').value,
+        address: document.getElementById('toAddress').value
+      },
+      items: items,
+      taxRate: document.getElementById('taxRate').value,
+      notes: document.getElementById('notes').value
+    };
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
+  }
+
+  function loadData() {
+    let data;
+    try { data = JSON.parse(localStorage.getItem(SAVE_KEY)); } catch(e) {}
+    if (!data) { addItem(); return; }
+
+    // 請求元
+    if (data.from) {
+      document.getElementById('fromName').value = data.from.name || '';
+      document.getElementById('fromAddress').value = data.from.address || '';
+      document.getElementById('fromTel').value = data.from.tel || '';
+      document.getElementById('fromEmail').value = data.from.email || '';
+      document.getElementById('fromRegNo').value = data.from.regNo || '';
+    }
+    // 請求先
+    if (data.to) {
+      document.getElementById('toName').value = data.to.name || '';
+      document.getElementById('toPerson').value = data.to.person || '';
+      document.getElementById('toAddress').value = data.to.address || '';
+    }
+    // 明細項目
+    document.getElementById('itemsBody').innerHTML = '';
+    if (data.items && data.items.length > 0) {
+      data.items.forEach(item => {
+        addItem();
+        const row = document.getElementById('itemsBody').lastElementChild;
+        const inputs = row.querySelectorAll('input');
+        inputs[0].value = item.description || '';
+        inputs[1].value = item.quantity || '1';
+        inputs[2].value = item.unit || '式';
+        inputs[3].value = item.unitPrice || '0';
+      });
+    } else {
+      addItem();
+    }
+    // 税率
+    if (data.taxRate) document.getElementById('taxRate').value = data.taxRate;
+    // 備考
+    if (data.notes !== undefined) document.getElementById('notes').value = data.notes;
+
+    recalc();
+  }
+
+  const debouncedSave = debounce(saveData, 500);
+
   function generateInvoiceId() {
     const chars = '0123456789ABCDEFGHJKLMNPQRSTUVWXYZ';
     const bytes = new Uint8Array(6);
@@ -524,12 +607,14 @@
     `;
     document.getElementById('itemsBody').appendChild(tr);
     recalc();
+    debouncedSave();
   }
 
   function removeItem(id) {
     const row = document.getElementById('item-' + id);
     if (row) row.remove();
     recalc();
+    debouncedSave();
   }
 
   function recalc() {
@@ -710,18 +795,31 @@
 
   function resetForm() {
     if (!confirm('入力内容をすべてリセットしますか？')) return;
+    localStorage.removeItem(SAVE_KEY);
     document.querySelectorAll('input[type="text"], input[type="email"], textarea').forEach(el => el.value = '');
     document.getElementById('invoiceNo').value = generateInvoiceId();
     document.getElementById('issueDate').value = formatDate(new Date());
     const d = new Date(); d.setDate(d.getDate()+30);
     document.getElementById('dueDate').value = formatDate(d);
     document.getElementById('taxRate').value = '0.10';
+    // 請求先のデフォルト値を復元
+    document.getElementById('toName').value = 'ウェルズ株式会社';
+    document.getElementById('toPerson').value = '代表取締役 鶴岡 貴子';
+    document.getElementById('toAddress').value = '〒248-0014 神奈川県鎌倉市由比ガ浜4-3-10-1';
     document.getElementById('itemsBody').innerHTML = '';
     addItem();
   }
 
-  // Init with one row
-  addItem();
+  // Init: restore saved data or start with one empty row
+  loadData();
+
+  // ── Auto-save event listeners ──
+  ['fromName','fromAddress','fromTel','fromEmail','fromRegNo',
+   'toName','toPerson','toAddress','notes'].forEach(id => {
+    document.getElementById(id).addEventListener('input', debouncedSave);
+  });
+  document.getElementById('taxRate').addEventListener('change', debouncedSave);
+  document.getElementById('itemsBody').addEventListener('input', debouncedSave);
 </script>
 
 </body>
