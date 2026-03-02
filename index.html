@@ -658,8 +658,26 @@
 
   function printInvoice() {
     const content = document.getElementById('previewBody').innerHTML;
+
+    // Build PDF filename: YYMMDD_請求書ID_請求元名前_請求額
+    const issueDate = document.getElementById('issueDate').value; // YYYY-MM-DD
+    const invoiceNo = document.getElementById('invoiceNo').value;
+    const fromName = document.getElementById('fromName').value || '未入力';
+    let subtotal = 0;
+    document.querySelectorAll('#itemsBody tr').forEach(row => {
+      const inputs = row.querySelectorAll('input');
+      const qty = parseFloat(inputs[1].value) || 0;
+      const price = parseFloat(inputs[3].value) || 0;
+      subtotal += qty * price;
+    });
+    const taxRate = parseFloat(document.getElementById('taxRate').value);
+    const total = Math.round(subtotal + subtotal * taxRate);
+    const yymmdd = issueDate ? issueDate.slice(2).replace(/-/g, '') : '000000';
+    const pdfTitle = `${yymmdd}_${invoiceNo}_${fromName}_${total}円`;
+
     const win = window.open('', '_blank');
     win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+      <title>${pdfTitle}</title>
       <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
       <style>
         :root { --ink:#1a1a2e; --accent:#1a1a2e; --border:#e0ddd8; --muted:#8a8780; }
