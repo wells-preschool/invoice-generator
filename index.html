@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>請求書つくるくん</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --ink: #1a1a2e;
@@ -138,7 +138,7 @@
   .items-table td input:focus { outline: none; border-color: var(--accent); }
   .items-table .num-input { text-align: right; }
   .items-table .subtotal {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Noto Sans JP', sans-serif;
     font-size: 14px;
     text-align: right;
     padding: 6px 8px;
@@ -193,7 +193,7 @@
     font-weight: 700;
   }
   .totals-row .amount {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Noto Sans JP', sans-serif;
     font-weight: 500;
   }
   .totals-row.grand .amount { color: var(--accent); }
@@ -322,11 +322,11 @@
   }
   .inv-table th:nth-child(n+3) { text-align: right; }
   .inv-table td { padding: 10px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
-  .inv-table td:nth-child(n+3) { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .inv-table td:nth-child(n+3) { text-align: right; font-family: 'Noto Sans JP', sans-serif; font-size: 13px; }
   .inv-totals { display: flex; justify-content: flex-end; }
   .inv-totals-box { min-width: 240px; }
   .inv-totals-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
-  .inv-totals-row .val { font-family: 'JetBrains Mono', monospace; }
+  .inv-totals-row .val { font-family: 'Noto Sans JP', sans-serif; }
   .inv-totals-row.grand { border-top: 2px solid var(--ink); margin-top: 6px; padding-top: 8px; font-size: 20px; font-weight: 700; }
   .inv-totals-row.grand .val { color: var(--ink); }
   .inv-notes { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
@@ -744,7 +744,7 @@
       </div>
 
       <div style="font-size:16px; margin-bottom:24px; font-weight:600;">
-        ご請求金額: <span style="font-size:24px; color:var(--ink); font-family:'JetBrains Mono',monospace;">${formatYen(total)}</span>
+        ご請求金額: <span style="font-size:24px; color:var(--ink); font-family:'Noto Sans JP',sans-serif;">${formatYen(total)}</span>
         <span style="font-size:13px; font-weight:400; color:var(--muted);">（税込）</span>
       </div>
 
@@ -794,7 +794,7 @@
     const win = window.open('', '_blank');
     win.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
       <title>${pdfTitle}</title>
-      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+      <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
       <style>
         :root { --ink:#1a1a2e; --accent:#1a1a2e; --border:#e0ddd8; --muted:#8a8780; }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -810,11 +810,11 @@
         .inv-table th { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; color:var(--muted); text-align:left; padding:8px 12px; border-bottom:2px solid var(--ink); }
         .inv-table th:nth-child(n+3) { text-align:right; }
         .inv-table td { padding:10px 12px; font-size:14px; border-bottom:1px solid var(--border); }
-        .inv-table td:nth-child(n+3) { text-align:right; font-family:'JetBrains Mono',monospace; font-size:13px; }
+        .inv-table td:nth-child(n+3) { text-align:right; font-family:'Noto Sans JP',sans-serif; font-size:13px; }
         .inv-totals { display:flex; justify-content:flex-end; }
         .inv-totals-box { min-width:240px; }
         .inv-totals-row { display:flex; justify-content:space-between; padding:4px 0; font-size:14px; }
-        .inv-totals-row .val { font-family:'JetBrains Mono',monospace; }
+        .inv-totals-row .val { font-family:'Noto Sans JP',sans-serif; }
         .inv-totals-row.grand { border-top:2px solid var(--ink); margin-top:6px; padding-top:8px; font-size:20px; font-weight:700; }
         .inv-totals-row.grand .val { color:var(--ink); }
         .inv-notes { margin-top:32px; padding-top:16px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); }
