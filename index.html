@@ -399,6 +399,10 @@
         <input type="date" id="dueDate">
       </div>
     </div>
+    <div class="form-group" style="margin-top:8px;">
+      <label>件名（任意）</label>
+      <input type="text" id="invoiceTitle">
+    </div>
   </div>
 
   <!-- 請求元 -->
@@ -553,7 +557,8 @@
       items: items,
       taxRate: document.getElementById('taxRate').value,
       taxMode: document.getElementById('taxMode').value,
-      notes: document.getElementById('notes').value
+      notes: document.getElementById('notes').value,
+      invoiceTitle: document.getElementById('invoiceTitle').value
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
   }
@@ -600,6 +605,8 @@
     }
     // 備考
     if (data.notes !== undefined) document.getElementById('notes').value = data.notes;
+    // 件名
+    if (data.invoiceTitle) document.getElementById('invoiceTitle').value = data.invoiceTitle;
 
     recalc();
   }
@@ -735,6 +742,7 @@
     const invoiceNo = document.getElementById('invoiceNo').value;
     const issueDate = document.getElementById('issueDate').value;
     const dueDate = document.getElementById('dueDate').value;
+    const invoiceTitle = document.getElementById('invoiceTitle').value;
     const notes = document.getElementById('notes').value;
     const taxRate = parseFloat(document.getElementById('taxRate').value);
     const taxMode = getTaxMode();
@@ -801,6 +809,7 @@
       <div class="inv-header">
         <div>
           <div class="inv-title">請 求 書</div>
+          ${invoiceTitle ? `<div style="font-size:13px; margin-top:4px; color:var(--ink);">${invoiceTitle}</div>` : ''}
         </div>
         <div class="inv-meta">
           No. ${invoiceNo}<br>
@@ -926,7 +935,7 @@
 
   // ── Auto-save event listeners ──
   ['fromName','fromAddress','fromTel','fromEmail','fromRegNo',
-   'toName','toPerson','toAddress','notes'].forEach(id => {
+   'toName','toPerson','toAddress','notes','invoiceTitle'].forEach(id => {
     document.getElementById(id).addEventListener('input', debouncedSave);
   });
   document.getElementById('taxRate').addEventListener('change', debouncedSave);
