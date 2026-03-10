@@ -453,7 +453,7 @@
           <th style="width:40%">品目・内容</th>
           <th style="width:15%">数量</th>
           <th style="width:10%">単位</th>
-          <th style="width:18%">単価（税抜）</th>
+          <th style="width:18%" id="unitPriceHeader">単価（税抜）</th>
           <th style="width:15%">金額</th>
           <th style="width:2%"></th>
         </tr>
@@ -463,6 +463,11 @@
     <button class="btn-add" onclick="addItem()">＋ 行を追加</button>
 
     <div class="tax-toggle no-print">
+      <label>税計算:</label>
+      <select id="taxMode" onchange="onTaxModeChange()">
+        <option value="exclusive" selected>税別</option>
+        <option value="inclusive">税込</option>
+      </select>
       <label>消費税率:</label>
       <select id="taxRate" onchange="recalc()">
         <option value="0.10" selected>10%</option>
@@ -473,9 +478,9 @@
 
     <div class="totals-bar">
       <div class="totals-box">
-        <div class="totals-row"><span>小計</span><span class="amount" id="subtotalDisplay">¥0</span></div>
-        <div class="totals-row"><span>消費税</span><span class="amount" id="taxDisplay">¥0</span></div>
-        <div class="totals-row grand"><span>合計</span><span class="amount" id="totalDisplay">¥0</span></div>
+        <div class="totals-row" id="subtotalRow"><span id="subtotalLabel">小計</span><span class="amount" id="subtotalDisplay">¥0</span></div>
+        <div class="totals-row" id="taxRow"><span id="taxLabel">消費税</span><span class="amount" id="taxDisplay">¥0</span></div>
+        <div class="totals-row grand"><span id="totalLabel">合計</span><span class="amount" id="totalDisplay">¥0</span></div>
       </div>
     </div>
   </div>
@@ -544,6 +549,7 @@
       },
       items: items,
       taxRate: document.getElementById('taxRate').value,
+      taxMode: document.getElementById('taxMode').value,
       notes: document.getElementById('notes').value
     };
     try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch(e) {}
@@ -583,8 +589,12 @@
     } else {
       addItem();
     }
-    // 税率
+    // 税率・税モード
     if (data.taxRate) document.getElementById('taxRate').value = data.taxRate;
+    if (data.taxMode) {
+      document.getElementById('taxMode').value = data.taxMode;
+      onTaxModeChange();
+    }
     // 備考
     if (data.notes !== undefined) document.getElementById('notes').value = data.notes;
 
@@ -626,13 +636,14 @@
 
   function addItem() {
     itemId++;
+    const priceLabel = getTaxMode() === 'inclusive' ? '単価（税込）' : '単価（税抜）';
     const tr = document.createElement('tr');
     tr.id = 'item-' + itemId;
     tr.innerHTML = `
       <td data-label="品目・内容"><input type="text" oninput="recalc()"></td>
       <td data-label="数量"><input type="number" class="num-input" value="1" min="0" oninput="recalc()"></td>
       <td data-label="単位"><input type="text" value="式" style="text-align:center"></td>
-      <td data-label="単価（税抜）"><input type="text" class="num-input" value="0" oninput="recalc()"></td>
+      <td data-label="${priceLabel}"><input type="text" class="num-input" value="0" oninput="recalc()"></td>
       <td class="subtotal" data-label="金額">¥0</td>
       <td><button class="btn-remove" onclick="removeItem(${itemId})">×</button></td>
     `;
@@ -648,8 +659,26 @@
     debouncedSave();
   }
 
+  function getTaxMode() {
+    return document.getElementById('taxMode').value;
+  }
+
+  function onTaxModeChange() {
+    const mode = getTaxMode();
+    // Update column header
+    document.getElementById('unitPriceHeader').textContent = mode === 'inclusive' ? '単価（税込）' : '単価（税抜）';
+    // Update mobile data-label on all rows
+    document.querySelectorAll('#itemsBody tr').forEach(row => {
+      const priceTd = row.querySelectorAll('td')[3];
+      if (priceTd) priceTd.setAttribute('data-label', mode === 'inclusive' ? '単価（税込）' : '単価（税抜）');
+    });
+    recalc();
+    debouncedSave();
+  }
+
   function recalc() {
-    let subtotal = 0;
+    const taxMode = getTaxMode();
+    let lineSum = 0;
     const rows = document.querySelectorAll('#itemsBody tr');
     rows.forEach(row => {
       const inputs = row.querySelectorAll('input');
@@ -657,12 +686,34 @@
       const price = parseFloat(inputs[3].value) || 0;
       const lineTotal = qty * price;
       row.querySelector('.subtotal').textContent = formatYen(lineTotal);
-      subtotal += lineTotal;
+      lineSum += lineTotal;
     });
 
     const taxRate = parseFloat(document.getElementById('taxRate').value);
-    const tax = subtotal * taxRate;
-    const total = subtotal + tax;
+
+    let subtotal, tax, total;
+    if (taxMode === 'inclusive') {
+      // 税込: 入力価格は税込、税額を逆算
+      total = lineSum;
+      tax = total - total / (1 + taxRate);
+      subtotal = total - tax;
+    } else {
+      // 税別: 入力価格は税抜、税額を加算
+      subtotal = lineSum;
+      tax = subtotal * taxRate;
+      total = subtotal + tax;
+    }
+
+    // ラベル更新
+    if (taxMode === 'inclusive') {
+      document.getElementById('subtotalRow').style.display = 'none';
+      document.getElementById('taxLabel').textContent = 'うち消費税';
+      document.getElementById('totalLabel').textContent = '合計（税込）';
+    } else {
+      document.getElementById('subtotalRow').style.display = '';
+      document.getElementById('taxLabel').textContent = '消費税';
+      document.getElementById('totalLabel').textContent = '合計';
+    }
 
     document.getElementById('subtotalDisplay').textContent = formatYen(subtotal);
     document.getElementById('taxDisplay').textContent = formatYen(tax);
@@ -683,9 +734,11 @@
     const dueDate = document.getElementById('dueDate').value;
     const notes = document.getElementById('notes').value;
     const taxRate = parseFloat(document.getElementById('taxRate').value);
+    const taxMode = getTaxMode();
 
-    let subtotal = 0;
+    let lineSum = 0;
     let itemsHTML = '';
+    const unitPriceLabel = taxMode === 'inclusive' ? '単価（税込）' : '単価（税抜）';
     const rows = document.querySelectorAll('#itemsBody tr');
     rows.forEach(row => {
       const inputs = row.querySelectorAll('input');
@@ -694,7 +747,7 @@
       const unit = inputs[2].value || '';
       const price = parseFloat(inputs[3].value) || 0;
       const lineTotal = qty * price;
-      subtotal += lineTotal;
+      lineSum += lineTotal;
       itemsHTML += `<tr>
         <td>${name}</td>
         <td>${qty}</td>
@@ -704,8 +757,16 @@
       </tr>`;
     });
 
-    const tax = subtotal * taxRate;
-    const total = subtotal + tax;
+    let subtotal, tax, total;
+    if (taxMode === 'inclusive') {
+      total = lineSum;
+      tax = total - total / (1 + taxRate);
+      subtotal = total - tax;
+    } else {
+      subtotal = lineSum;
+      tax = subtotal * taxRate;
+      total = subtotal + tax;
+    }
     const taxLabel = taxRate === 0.10 ? '10%' : taxRate === 0.08 ? '8%' : '0%';
 
     let fromDetails = '';
@@ -717,6 +778,21 @@
     let toDetails = '';
     if (toAddress) toDetails += toAddress + '<br>';
     if (toPerson) toDetails += toPerson + ' 様';
+
+    // 税込モードの場合、合計行の表示を変える
+    let totalsHTML;
+    if (taxMode === 'inclusive') {
+      totalsHTML = `
+        <div class="inv-totals-row grand"><span>合計（税込）</span><span class="val">${formatYen(total)}</span></div>
+        <div class="inv-totals-row"><span>うち消費税（${taxLabel}）</span><span class="val">${formatYen(tax)}</span></div>
+      `;
+    } else {
+      totalsHTML = `
+        <div class="inv-totals-row"><span>小計</span><span class="val">${formatYen(subtotal)}</span></div>
+        <div class="inv-totals-row"><span>消費税（${taxLabel}）</span><span class="val">${formatYen(tax)}</span></div>
+        <div class="inv-totals-row grand"><span>合計</span><span class="val">${formatYen(total)}</span></div>
+      `;
+    }
 
     const html = `
       <div class="inv-header">
@@ -749,15 +825,13 @@
       </div>
 
       <table class="inv-table">
-        <thead><tr><th>品目</th><th>数量</th><th>単位</th><th>単価</th><th>金額</th></tr></thead>
+        <thead><tr><th>品目</th><th>数量</th><th>単位</th><th>${unitPriceLabel}</th><th>金額</th></tr></thead>
         <tbody>${itemsHTML}</tbody>
       </table>
 
       <div class="inv-totals">
         <div class="inv-totals-box">
-          <div class="inv-totals-row"><span>小計</span><span class="val">${formatYen(subtotal)}</span></div>
-          <div class="inv-totals-row"><span>消費税（${taxLabel}）</span><span class="val">${formatYen(tax)}</span></div>
-          <div class="inv-totals-row grand"><span>合計</span><span class="val">${formatYen(total)}</span></div>
+          ${totalsHTML}
         </div>
       </div>
 
@@ -779,15 +853,16 @@
     const issueDate = document.getElementById('issueDate').value; // YYYY-MM-DD
     const invoiceNo = document.getElementById('invoiceNo').value;
     const fromName = document.getElementById('fromName').value || '未入力';
-    let subtotal = 0;
+    let lineSum = 0;
     document.querySelectorAll('#itemsBody tr').forEach(row => {
       const inputs = row.querySelectorAll('input');
       const qty = parseFloat(inputs[1].value) || 0;
       const price = parseFloat(inputs[3].value) || 0;
-      subtotal += qty * price;
+      lineSum += qty * price;
     });
     const taxRate = parseFloat(document.getElementById('taxRate').value);
-    const total = Math.round(subtotal + subtotal * taxRate);
+    const taxMode = getTaxMode();
+    const total = taxMode === 'inclusive' ? Math.round(lineSum) : Math.round(lineSum + lineSum * taxRate);
     const yymmdd = issueDate ? issueDate.slice(2).replace(/-/g, '') : '000000';
     const pdfTitle = `${yymmdd}_${invoiceNo}_${fromName}_${total}円`;
 
@@ -833,6 +908,8 @@
     const d = new Date(); d.setDate(d.getDate()+30);
     document.getElementById('dueDate').value = formatDate(d);
     document.getElementById('taxRate').value = '0.10';
+    document.getElementById('taxMode').value = 'exclusive';
+    onTaxModeChange();
     // 請求先のデフォルト値を復元
     document.getElementById('toName').value = 'ウェルズ株式会社';
     document.getElementById('toPerson').value = '代表取締役 鶴岡 貴子';
@@ -850,6 +927,7 @@
     document.getElementById(id).addEventListener('input', debouncedSave);
   });
   document.getElementById('taxRate').addEventListener('change', debouncedSave);
+  document.getElementById('taxMode').addEventListener('change', debouncedSave);
   document.getElementById('itemsBody').addEventListener('input', debouncedSave);
 </script>
 
